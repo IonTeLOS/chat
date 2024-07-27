@@ -84,27 +84,20 @@ export const ShellAppBar = ({
   const theme = useTheme();
   const { peerList, isEmbedded, showRoomControls } = useContext(ShellContext);
   const [isInIframe, setIsInIframe] = useState(false);
-  const [messageToCopy, setMessageToCopy] = useState('');
+  const [messageToCopy, setMessageToCopy] = useState<string | null>(null);
   const [showCopyButton, setShowCopyButton] = useState(false);
 
   // Detect if the page is running inside an iframe
   useEffect(() => {
-    if (window.self !== window.top) {
-      setIsInIframe(true);
-    } else {
-      setIsInIframe(false);
-    }
+    setIsInIframe(window.self !== window.top);
   }, []);
 
   // Set up message listener
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Validate the origin of the message
-      if (event.origin !== window.location.origin) {
-        return;
-      }
+      if (event.origin !== window.location.origin) return;
       setMessageToCopy(event.data);
-      setShowCopyButton(true); // Show the button if a message is received
+      setShowCopyButton(true);
     };
 
     window.addEventListener('message', handleMessage);
@@ -115,17 +108,37 @@ export const ShellAppBar = ({
   }, []);
 
   useEffect(() => {
-    // Update button visibility based on iframe status and message reception
     if (isInIframe && !messageToCopy) {
-      setShowCopyButton(false); // Hide button if inside iframe and no message
+      setShowCopyButton(false);
     } else {
-      setShowCopyButton(true); // Show button otherwise
+      setShowCopyButton(true);
     }
   }, [isInIframe, messageToCopy]);
 
   const handleQRCodeClick = () => setIsQRCodeDialogOpen(true);
 
   const onClickFullscreen = () => setIsFullscreen(!isFullscreen);
+
+  const handleShareLink = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ url });
+        alert('URL shared successfully!');
+      } catch (err) {
+        console.error('Failed to share URL: ', err);
+        alert('Failed to share URL.');
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        alert('URL copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy URL: ', err);
+        alert('Failed to copy URL.');
+      }
+    }
+  };
 
   const handleCopyMessage = async () => {
     if (messageToCopy) {
@@ -135,6 +148,7 @@ export const ShellAppBar = ({
         alert('Message copied to clipboard!');
       } catch (err) {
         console.error('Failed to copy message: ', err);
+        alert('Failed to copy message.');
       }
     } else {
       alert('No message to copy.');
@@ -186,28 +200,30 @@ export const ShellAppBar = ({
             )}
             {isEmbedded ? null : (
               <>
-                {showCopyButton && (
-                  <Tooltip title="Copy current URL">
+                {!isInIframe && (
+                  <Tooltip title="Share current URL">
                     <IconButton
                       size="large"
                       color="inherit"
-                      aria-label="Copy current URL"
-                      onClick={handleCopyMessage}
+                      aria-label="Share current URL"
+                      onClick={handleShareLink}
                     >
                       <Link />
                     </IconButton>
                   </Tooltip>
                 )}
-                <Tooltip title="Show QR Code">
-                  <IconButton
-                    size="large"
-                    color="inherit"
-                    aria-label="Show QR Code"
-                    onClick={handleQRCodeClick}
-                  >
-                    <QrCode2 />
-                  </IconButton>
-                </Tooltip>
+                {!isInIframe && (
+                  <Tooltip title="Show QR Code">
+                    <IconButton
+                      size="large"
+                      color="inherit"
+                      aria-label="Show QR Code"
+                      onClick={handleQRCodeClick}
+                    >
+                      <QrCode2 />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </>
             )}
             {isEmbedded ? null : (
@@ -276,6 +292,18 @@ export const ShellAppBar = ({
           </Fab>
         </Tooltip>
       </Zoom>
+      {isInIframe && showCopyButton && (
+        <Tooltip title="Share message">
+          <IconButton
+            size="large"
+            color="inherit"
+            aria-label="Share message"
+            onClick={handleCopyMessage}
+          >
+            <Link />
+          </IconButton>
+        </Tooltip>
+      )}
     </>
   );
 };
