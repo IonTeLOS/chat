@@ -145,17 +145,12 @@ export const ShellAppBar = ({
   };
 
   const handleCopyMessage = async () => {
-    // Retrieve the stored message from localStorage
-    const stored = localStorage.getItem('current');
-    
-    // Determine which message to use
-    const urlToCopy = messageToCopy ? `https://pchat.xyz/public/${messageToCopy}` :
-                        stored ? `https://pchat.xyz/public/${stored}` :
-                        null;
+    const currentUrl = window.location.href;
+
 
     if (urlToCopy) {
       try {
-        await navigator.clipboard.writeText(urlToCopy);
+        await navigator.clipboard.writeText(currentUrl);
         alert('Message copied to clipboard!');
       } catch (err) {
         console.error('Failed to copy message: ', err);
