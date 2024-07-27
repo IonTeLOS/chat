@@ -104,9 +104,12 @@ export const ShellAppBar = ({
         console.warn('Blocked message from untrusted origin:', event.origin);
         return;
       }
-
-      // Process the message
-      setMessageToCopy(event.data);
+      if (event.data.type === 'SHARE_ADDRESS') {
+        const shareAddress = event.data.data;
+        localStorage.setItem('current', shareAddress);
+        // Process the message
+        setMessageToCopy(shareAddress);
+      }
     };
 
     window.addEventListener('message', handleMessage);
@@ -141,20 +144,28 @@ export const ShellAppBar = ({
     }
   };
 
-  const handleCopyMessage = async () => {
-    if (messageToCopy) {
-      const urlToCopy = `https://pchat.xyz/public/${messageToCopy}`;
-      try {
-        await navigator.clipboard.writeText(urlToCopy);
-        alert('Message copied to clipboard!');
-      } catch (err) {
-        console.error('Failed to copy message: ', err);
-        alert('Failed to copy message.');
-      }
-    } else {
-      alert('No message to copy.');
+const handleCopyMessage = async () => {
+  // Retrieve the stored message from localStorage
+  const stored = localStorage.getItem('current');
+  
+  // Determine which message to use
+  const urlToCopy = messageToCopy ? `https://pchat.xyz/public/${messageToCopy}` :
+                      stored ? `https://pchat.xyz/public/${stored}` :
+                      null;
+
+  if (urlToCopy) {
+    try {
+      await navigator.clipboard.writeText(urlToCopy);
+      alert('Message copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy message: ', err);
+      alert('Failed to copy message.');
     }
-  };
+  } else {
+    alert('No message to copy.');
+  }
+};
+
 
   const handleRoomControlsClick = () => {
     if (messageToCopy) {
