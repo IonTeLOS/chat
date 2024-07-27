@@ -85,7 +85,6 @@ export const ShellAppBar = ({
   const { peerList, isEmbedded, showRoomControls } = useContext(ShellContext);
   const [isInIframe, setIsInIframe] = useState(false);
   const [messageToCopy, setMessageToCopy] = useState<string | null>(null);
-  const [showCopyButton, setShowCopyButton] = useState(false);
 
   // Detect if the page is running inside an iframe
   useEffect(() => {
@@ -97,7 +96,6 @@ export const ShellAppBar = ({
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       setMessageToCopy(event.data);
-      setShowCopyButton(true);
     };
 
     window.addEventListener('message', handleMessage);
@@ -106,14 +104,6 @@ export const ShellAppBar = ({
       window.removeEventListener('message', handleMessage);
     };
   }, []);
-
-  useEffect(() => {
-    if (isInIframe && !messageToCopy) {
-      setShowCopyButton(false);
-    } else {
-      setShowCopyButton(true);
-    }
-  }, [isInIframe, messageToCopy]);
 
   const handleQRCodeClick = () => setIsQRCodeDialogOpen(true);
 
@@ -198,40 +188,30 @@ export const ShellAppBar = ({
                 </Typography>
               </Tooltip>
             )}
-            {isEmbedded ? null : (
-              <>
-                {!isInIframe && (
-                  <Tooltip title="Share current URL">
-                    <IconButton
-                      size="large"
-                      color="inherit"
-                      aria-label="Share current URL"
-                      onClick={handleShareLink}
-                    >
-                      <Link />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                {!isInIframe && (
-                  <Tooltip title="Show QR Code">
-                    <IconButton
-                      size="large"
-                      color="inherit"
-                      aria-label="Show QR Code"
-                      onClick={handleQRCodeClick}
-                    >
-                      <QrCode2 />
-                    </IconButton>
-                  </Tooltip>
-                )}
-              </>
-            )}
-            {isEmbedded ? null : (
-              <Divider
-                orientation="vertical"
-                sx={{ height: theme.spacing(3.5), mx: theme.spacing(1) }}
-              />
-            )}
+            <Tooltip title="Copy current URL or Share">
+              <IconButton
+                size="large"
+                color="inherit"
+                aria-label="Copy or Share URL"
+                onClick={isInIframe ? handleCopyMessage : handleShareLink}
+              >
+                <Link />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Show QR Code">
+              <IconButton
+                size="large"
+                color="inherit"
+                aria-label="Show QR Code"
+                onClick={handleQRCodeClick}
+              >
+                <QrCode2 />
+              </IconButton>
+            </Tooltip>
+            <Divider
+              orientation="vertical"
+              sx={{ height: theme.spacing(3.5), mx: theme.spacing(1) }}
+            />
             <Tooltip
               title={
                 showRoomControls ? 'Hide Room Controls' : 'Show Room Controls'
@@ -292,18 +272,6 @@ export const ShellAppBar = ({
           </Fab>
         </Tooltip>
       </Zoom>
-      {isInIframe && showCopyButton && (
-        <Tooltip title="Share message">
-          <IconButton
-            size="large"
-            color="inherit"
-            aria-label="Share message"
-            onClick={handleCopyMessage}
-          >
-            <Link />
-          </IconButton>
-        </Tooltip>
-      )}
     </>
   );
 };
