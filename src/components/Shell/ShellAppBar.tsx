@@ -144,34 +144,53 @@ export const ShellAppBar = ({
     }
   };
 
-const handleCopyMessage = async () => {
-  // Retrieve the stored message from localStorage
-  const stored = localStorage.getItem('current');
-  
-  // Determine which message to use
-  const urlToCopy = messageToCopy ? `https://pchat.xyz/public/${messageToCopy}` :
-                      stored ? `https://pchat.xyz/public/${stored}` :
-                      null;
+  const handleCopyMessage = async () => {
+    // Retrieve the stored message from localStorage
+    const stored = localStorage.getItem('current');
+    
+    // Determine which message to use
+    const urlToCopy = messageToCopy ? `https://pchat.xyz/public/${messageToCopy}` :
+                        stored ? `https://pchat.xyz/public/${stored}` :
+                        null;
 
-  if (urlToCopy) {
-    try {
-      await navigator.clipboard.writeText(urlToCopy);
-      alert('Message copied to clipboard!');
-    } catch (err) {
-      console.error('Failed to copy message: ', err);
-      alert('Failed to copy message.');
+    if (urlToCopy) {
+      try {
+        await navigator.clipboard.writeText(urlToCopy);
+        alert('Message copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy message: ', err);
+        alert('Failed to copy message.');
+      }
+    } else {
+      alert('No message to copy.');
     }
-  } else {
-    alert('No message to copy.');
-  }
-};
-
+  };
 
   const handleRoomControlsClick = () => {
-    if (messageToCopy) {
-      window.open(`https://ntfy.sh/${messageToCopy}`, '_blank');
+    // Get the current URL
+    const currentUrl = window.location.href;
+
+    // Define the base URLs to check
+    const publicBaseUrl = 'https://pchat.xyz/public/';
+    const privateBaseUrl = 'https://pchat.xyz/private/';
+
+    let urlPart: string | null = null;
+
+    // Check if the URL starts with the public base URL
+    if (currentUrl.startsWith(publicBaseUrl)) {
+      urlPart = currentUrl.replace(publicBaseUrl, '');
+    }
+    // Check if the URL starts with the private base URL
+    else if (currentUrl.startsWith(privateBaseUrl)) {
+      urlPart = currentUrl.replace(privateBaseUrl, '');
+    }
+
+    // Construct the target URL and open it in a new tab
+    if (urlPart) {
+      const targetUrl = `https://ntfy.sh/${urlPart}`;
+      window.open(targetUrl, '_blank');
     } else {
-      alert('No message to send.');
+      alert('No valid URL part to open.');
     }
   };
 
