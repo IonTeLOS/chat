@@ -10,23 +10,28 @@ export const rtcConfig: RTCConfiguration = {
   // CHITCHATTER PEERS MAY NOT BE ABLE TO CONNECT DEPENDING ON HOW THEY ARE
   // CONNECTED TO THE INTERNET.
   iceServers: [
-    {
-      urls: 'stun:82.209.159.69:3478',
-    },
-    {
-      urls: 'turn:82.209.159.69:3478',
-      username: 'c386d75b5633456cb3bc13812858098d',
-      credential: '58fd06d85fe14c0f9f46220748b0f565',
-    },
-    {
-      urls: 'turn:82.209.159.69:3478',
-      username: '0e2f563eacfd4c4a82ea239b04d1d494',
-      credential: '8179b4b533f240ad9fe590663bef1bc9',
-    },
-    {
-      urls: 'turn:82.209.159.69:3478',
-      username: 'feab95c3fcd147a2a96a3d3590bf9cda',
-      credential: '654cafd885424b7fb974e65f631f25f9',
-    },
+      {
+        urls: "stun:stun.relay.metered.ca:80",
+      },
+      {
+        urls: "turn:global.relay.metered.ca:80",
+        username: "6b437e2ac1a4f0830a5e9330",
+        credential: "hIUqH0S18YV1W4jX",
+      },
+      {
+        urls: "turn:global.relay.metered.ca:80?transport=tcp",
+        username: "6b437e2ac1a4f0830a5e9330",
+        credential: "hIUqH0S18YV1W4jX",
+      },
+      {
+        urls: "turn:global.relay.metered.ca:443",
+        username: "6b437e2ac1a4f0830a5e9330",
+        credential: "hIUqH0S18YV1W4jX",
+      },
+      {
+        urls: "turns:global.relay.metered.ca:443?transport=tcp",
+        username: "6b437e2ac1a4f0830a5e9330",
+        credential: "hIUqH0S18YV1W4jX",
+      },
   ],
 }
