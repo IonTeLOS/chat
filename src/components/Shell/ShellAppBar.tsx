@@ -15,7 +15,7 @@ import FullscreenExit from '@mui/icons-material/FullscreenExit';
 import Link from '@mui/icons-material/Link';
 import Menu from '@mui/icons-material/Menu';
 import QrCode2 from '@mui/icons-material/QrCode2';
-import RoomPreferences from '@mui/icons-material/RoomPreferences';
+import Notifications from '@mui/icons-material/Notifications'; // Bell icon
 import { useContext, useEffect, useState } from 'react';
 import { ShellContext } from 'contexts/ShellContext';
 import { drawerWidth } from './Drawer';
@@ -94,7 +94,18 @@ export const ShellAppBar = ({
   // Set up message listener
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
+      const allowedOrigins = [
+        'https://teloslinux.org',
+        'file://',  // Matches any file URL
+      ];
+
+      // Check if the event origin matches any of the allowed origins
+      if (!allowedOrigins.some(origin => event.origin.startsWith(origin))) {
+        console.warn('Blocked message from untrusted origin:', event.origin);
+        return;
+      }
+
+      // Process the message
       setMessageToCopy(event.data);
     };
 
@@ -142,6 +153,14 @@ export const ShellAppBar = ({
       }
     } else {
       alert('No message to copy.');
+    }
+  };
+
+  const handleRoomControlsClick = () => {
+    if (messageToCopy) {
+      window.open(`https://ntfy.sh/${messageToCopy}`, '_blank');
+    } else {
+      alert('No message to send.');
     }
   };
 
@@ -221,9 +240,9 @@ export const ShellAppBar = ({
                 size="large"
                 color="inherit"
                 aria-label="show room controls"
-                onClick={onRoomControlsClick}
+                onClick={handleRoomControlsClick}
               >
-                <RoomPreferences />
+                <Notifications />
               </IconButton>
             </Tooltip>
             <Tooltip
@@ -266,7 +285,7 @@ export const ShellAppBar = ({
             size="small"
             aria-label="show room controls"
             color="primary"
-            onClick={onRoomControlsClick}
+            onClick={handleRoomControlsClick}
           >
             <ExpandMore />
           </Fab>
