@@ -129,8 +129,9 @@ export const ShellAppBar = ({
 
   const handleCopyMessage = async () => {
     if (messageToCopy) {
+      const urlToCopy = `https://pchat.xyz/public/${messageToCopy}`;
       try {
-        await navigator.clipboard.writeText(messageToCopy);
+        await navigator.clipboard.writeText(urlToCopy);
         alert('Message copied to clipboard!');
       } catch (err) {
         console.error('Failed to copy message: ', err);
