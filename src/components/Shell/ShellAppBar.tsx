@@ -1,5 +1,4 @@
 import { styled, useTheme } from '@mui/material/styles'
-
 import IconButton from '@mui/material/IconButton'
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import Fab from '@mui/material/Fab'
@@ -10,7 +9,6 @@ import Typography from '@mui/material/Typography'
 import Slide from '@mui/material/Slide'
 import Zoom from '@mui/material/Zoom'
 import Divider from '@mui/material/Divider'
-
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Fullscreen from '@mui/icons-material/Fullscreen'
 import FullscreenExit from '@mui/icons-material/FullscreenExit'
@@ -18,11 +16,8 @@ import Link from '@mui/icons-material/Link'
 import Menu from '@mui/icons-material/Menu'
 import QrCode2 from '@mui/icons-material/QrCode2'
 import RoomPreferences from '@mui/icons-material/RoomPreferences'
-
-import { useContext } from 'react'
-
+import { useContext, useEffect, useState } from 'react'
 import { ShellContext } from 'contexts/ShellContext'
-
 import { drawerWidth } from './Drawer'
 import { peerListWidth } from './PeerList'
 
@@ -32,7 +27,7 @@ interface AppBarProps extends MuiAppBarProps {
 }
 
 export const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: prop =>
+  shouldForwardProp: (prop) =>
     prop !== 'isDrawerOpen' && prop !== 'isPeerListOpen',
 })<AppBarProps>(({ theme, isDrawerOpen, isPeerListOpen }) => ({
   transition: theme.transitions.create(['margin', 'width'], {
@@ -88,6 +83,17 @@ export const ShellAppBar = ({
 }: ShellAppBarProps) => {
   const theme = useTheme()
   const { peerList, isEmbedded, showRoomControls } = useContext(ShellContext)
+  const [isInIframe, setIsInIframe] = useState(false)
+  
+  // Detect if the page is running inside an iframe
+  useEffect(() => {
+    if (window.self !== window.top) {
+      setIsInIframe(true)
+    } else {
+      setIsInIframe(false)
+    }
+  }, [])
+
   const handleQRCodeClick = () => setIsQRCodeDialogOpen(true)
   const onClickFullscreen = () => setIsFullscreen(!isFullscreen)
 
@@ -136,16 +142,18 @@ export const ShellAppBar = ({
             )}
             {isEmbedded ? null : (
               <>
-                <Tooltip title="Copy current URL">
-                  <IconButton
-                    size="large"
-                    color="inherit"
-                    aria-label="Copy current URL"
-                    onClick={onLinkButtonClick}
-                  >
-                    <Link />
-                  </IconButton>
-                </Tooltip>
+                {!isInIframe && (
+                  <Tooltip title="Copy current URL">
+                    <IconButton
+                      size="large"
+                      color="inherit"
+                      aria-label="Copy current URL"
+                      onClick={onLinkButtonClick}
+                    >
+                      <Link />
+                    </IconButton>
+                  </Tooltip>
+                )}
                 <Tooltip title="Show QR Code">
                   <IconButton
                     size="large"
