@@ -1,29 +1,29 @@
-import { styled, useTheme } from '@mui/material/styles'
-import IconButton from '@mui/material/IconButton'
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
-import Fab from '@mui/material/Fab'
-import StepIcon from '@mui/material/StepIcon'
-import Toolbar from '@mui/material/Toolbar'
-import Tooltip from '@mui/material/Tooltip'
-import Typography from '@mui/material/Typography'
-import Slide from '@mui/material/Slide'
-import Zoom from '@mui/material/Zoom'
-import Divider from '@mui/material/Divider'
-import ExpandMore from '@mui/icons-material/ExpandMore'
-import Fullscreen from '@mui/icons-material/Fullscreen'
-import FullscreenExit from '@mui/icons-material/FullscreenExit'
-import Link from '@mui/icons-material/Link'
-import Menu from '@mui/icons-material/Menu'
-import QrCode2 from '@mui/icons-material/QrCode2'
-import RoomPreferences from '@mui/icons-material/RoomPreferences'
-import { useContext, useEffect, useState } from 'react'
-import { ShellContext } from 'contexts/ShellContext'
-import { drawerWidth } from './Drawer'
-import { peerListWidth } from './PeerList'
+import { styled, useTheme } from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import Fab from '@mui/material/Fab';
+import StepIcon from '@mui/material/StepIcon';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import Slide from '@mui/material/Slide';
+import Zoom from '@mui/material/Zoom';
+import Divider from '@mui/material/Divider';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import Fullscreen from '@mui/icons-material/Fullscreen';
+import FullscreenExit from '@mui/icons-material/FullscreenExit';
+import Link from '@mui/icons-material/Link';
+import Menu from '@mui/icons-material/Menu';
+import QrCode2 from '@mui/icons-material/QrCode2';
+import RoomPreferences from '@mui/icons-material/RoomPreferences';
+import { useContext, useEffect, useState } from 'react';
+import { ShellContext } from 'contexts/ShellContext';
+import { drawerWidth } from './Drawer';
+import { peerListWidth } from './PeerList';
 
 interface AppBarProps extends MuiAppBarProps {
-  isDrawerOpen?: boolean
-  isPeerListOpen?: boolean
+  isDrawerOpen?: boolean;
+  isPeerListOpen?: boolean;
 }
 
 export const AppBar = styled(MuiAppBar, {
@@ -52,20 +52,20 @@ export const AppBar = styled(MuiAppBar, {
     isPeerListOpen && {
       width: `calc(100% - ${drawerWidth}px - ${peerListWidth}px)`,
     }),
-}))
+}));
 
 interface ShellAppBarProps {
-  onDrawerOpen: () => void
-  onLinkButtonClick: () => Promise<void>
-  isDrawerOpen: boolean
-  isPeerListOpen: boolean
-  title: string
-  onPeerListClick: () => void
-  onRoomControlsClick: () => void
-  setIsQRCodeDialogOpen: (isOpen: boolean) => void
-  showAppBar: boolean
-  isFullscreen: boolean
-  setIsFullscreen: (isFullscreen: boolean) => void
+  onDrawerOpen: () => void;
+  onLinkButtonClick: () => Promise<void>;
+  isDrawerOpen: boolean;
+  isPeerListOpen: boolean;
+  title: string;
+  onPeerListClick: () => void;
+  onRoomControlsClick: () => void;
+  setIsQRCodeDialogOpen: (isOpen: boolean) => void;
+  showAppBar: boolean;
+  isFullscreen: boolean;
+  setIsFullscreen: (isFullscreen: boolean) => void;
 }
 
 export const ShellAppBar = ({
@@ -81,21 +81,64 @@ export const ShellAppBar = ({
   isFullscreen,
   setIsFullscreen,
 }: ShellAppBarProps) => {
-  const theme = useTheme()
-  const { peerList, isEmbedded, showRoomControls } = useContext(ShellContext)
-  const [isInIframe, setIsInIframe] = useState(false)
-  
+  const theme = useTheme();
+  const { peerList, isEmbedded, showRoomControls } = useContext(ShellContext);
+  const [isInIframe, setIsInIframe] = useState(false);
+  const [messageToCopy, setMessageToCopy] = useState('');
+  const [showCopyButton, setShowCopyButton] = useState(false);
+
   // Detect if the page is running inside an iframe
   useEffect(() => {
     if (window.self !== window.top) {
-      setIsInIframe(true)
+      setIsInIframe(true);
     } else {
-      setIsInIframe(false)
+      setIsInIframe(false);
     }
-  }, [])
+  }, []);
 
-  const handleQRCodeClick = () => setIsQRCodeDialogOpen(true)
-  const onClickFullscreen = () => setIsFullscreen(!isFullscreen)
+  // Set up message listener
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Validate the origin of the message
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+      setMessageToCopy(event.data);
+      setShowCopyButton(true); // Show the button if a message is received
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Update button visibility based on iframe status and message reception
+    if (isInIframe && !messageToCopy) {
+      setShowCopyButton(false); // Hide button if inside iframe and no message
+    } else {
+      setShowCopyButton(true); // Show button otherwise
+    }
+  }, [isInIframe, messageToCopy]);
+
+  const handleQRCodeClick = () => setIsQRCodeDialogOpen(true);
+
+  const onClickFullscreen = () => setIsFullscreen(!isFullscreen);
+
+  const handleCopyMessage = async () => {
+    if (messageToCopy) {
+      try {
+        await navigator.clipboard.writeText(messageToCopy);
+        alert('Message copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy message: ', err);
+      }
+    } else {
+      alert('No message to copy.');
+    }
+  };
 
   return (
     <>
@@ -142,13 +185,13 @@ export const ShellAppBar = ({
             )}
             {isEmbedded ? null : (
               <>
-                {!isInIframe && (
+                {showCopyButton && (
                   <Tooltip title="Copy current URL">
                     <IconButton
                       size="large"
                       color="inherit"
                       aria-label="Copy current URL"
-                      onClick={onLinkButtonClick}
+                      onClick={handleCopyMessage}
                     >
                       <Link />
                     </IconButton>
@@ -233,5 +276,5 @@ export const ShellAppBar = ({
         </Tooltip>
       </Zoom>
     </>
-  )
-}
+  );
+};
