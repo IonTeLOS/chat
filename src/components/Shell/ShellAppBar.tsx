@@ -182,7 +182,7 @@ export const ShellAppBar = ({
 
     // Construct the target URL and open it in a new tab
     if (urlPart) {
-      const targetUrl = `https://ntfy.sh/${urlPart}`;
+      const targetUrl = `https://notify.pchat.xyz/${urlPart}`;
       window.open(targetUrl, '_blank');
     } else {
       alert('No valid URL part to open.');
@@ -258,7 +258,7 @@ export const ShellAppBar = ({
             />
             <Tooltip
               title={
-                showRoomControls ? 'Hide Room Controls' : 'Show Room Controls'
+                showRoomControls ? 'Open notification channel' : 'Show Room Controls'
               }
             >
               <IconButton
