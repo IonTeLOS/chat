@@ -148,7 +148,7 @@ export const ShellAppBar = ({
     const currentUrl = window.location.href;
 
 
-    if (urlToCopy) {
+    if (currentUrl) {
       try {
         await navigator.clipboard.writeText(currentUrl);
         alert('Message copied to clipboard!');
